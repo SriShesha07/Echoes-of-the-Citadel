@@ -3,32 +3,33 @@ using UnityEngine;
 public class PlayerShooting : MonoBehaviour
 {
     [Header("References")]
-    public Camera tpsCamera; 
-    public GameObject impactEffect; 
-    public GameObject wallEffect;   
-    public AudioSource gunAudio;   
-    public AudioSource continuousAudio; 
+    public Camera tpsCamera;
+    public GameObject impactEffect;
+    public GameObject wallEffect;
+    public AudioSource gunAudio;
+    public AudioSource continuousAudio;
 
     [Header("Settings")]
+    public float weaponDamage = 25f;
     public float weaponRange = 100f;
-    public float fireRate = 0.15f;  
-    private float nextTimeToFire = 0f; 
+    public float fireRate = 0.15f;
+    private float nextTimeToFire = 0f;
 
     void Start()
     {
-        
+
     }
 
     void Update()
     {
-        if (Input.GetButtonDown("Fire1"))
+        if (Input.GetMouseButtonDown(0))
         {
             if (gunAudio != null) gunAudio.Play();
 
             Shoot();
             nextTimeToFire = Time.time + fireRate;
         }
-        else if (Input.GetButton("Fire1") && Time.time >= nextTimeToFire)
+        else if (Input.GetMouseButton(0) && Time.time >= nextTimeToFire)
         {
             if (continuousAudio != null && !continuousAudio.isPlaying)
             {
@@ -39,7 +40,7 @@ public class PlayerShooting : MonoBehaviour
             nextTimeToFire = Time.time + fireRate;
         }
 
-        if (Input.GetButtonUp("Fire1"))
+        if (Input.GetMouseButtonUp(0))
         {
             if (continuousAudio != null) continuousAudio.Stop();
         }
@@ -66,9 +67,7 @@ public class PlayerShooting : MonoBehaviour
                     Destroy(impact, 1f);
                 }
 
-                targetObject.TakeDamage();
-
-               
+                targetObject.TakeDamage(weaponDamage);
             }
             else
             {
