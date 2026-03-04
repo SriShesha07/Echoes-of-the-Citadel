@@ -15,7 +15,7 @@ public class PlayerMovement : MonoBehaviour
     public CapsuleCollider playerCollider;
     private float normalHeight;
     private Vector3 normalCenter;
-    public float crouchHeight = 1f;
+    public float crouchHeight = 0.5f;
 
     [Header("Animation")]
     public Animator animator;
