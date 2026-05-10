@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,17 +7,35 @@ public class EnemyAI : MonoBehaviour
     private NavMeshAgent agent;
     public Animator animator;
 
-    void Start()
+    private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+
+        if (agent == null)
+        {
+            Debug.LogError($"{name}: Missing NavMeshAgent.");
+        }
+
+        if (player == null)
+        {
+            Debug.LogError($"{name}: Player reference is not assigned.");
+        }
     }
 
-    void Update()
+    private void Update()
     {
-        if (player != null)
+        if (agent == null || player == null)
         {
-            agent.SetDestination(player.position);
+            return;
         }
+
+        if (!agent.isOnNavMesh)
+        {
+            Debug.LogWarning($"{name}: NavMeshAgent is not on a NavMesh.");
+            return;
+        }
+
+        agent.SetDestination(player.position);
 
         if (animator != null)
         {
