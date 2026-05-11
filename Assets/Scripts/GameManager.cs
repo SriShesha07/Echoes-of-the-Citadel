@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -22,6 +23,33 @@ public class GameManager : MonoBehaviour
     [Header("Level 1 Door")]
     public DoorController level1ExitDoor;
 
+    [Header("Level 2 Progress")]
+    public bool hasArisHandprint;
+
+    [Header("Level 2 Door")]
+    public DoorController dnaDoor;
+
+   
+
+    [Header("Ending UI")]
+    public GameObject endingPanel;
+    public TextMeshProUGUI endingTitleText;
+    public TextMeshProUGUI endingBodyText;
+
+    [Header("Upload UI")]
+    public GameObject uploadPanel;
+    public Slider uploadSlider;
+    public TextMeshProUGUI uploadPercentText;
+
+    [Header("Upload Settings")]
+    public float uploadDuration = 45f;
+
+    private bool uploadStarted;
+    private float uploadTimer;
+
+    [Header("Final Wave")]
+    public EnemySpawner finalWaveSpawner;
+
     private void Awake()
     {
         Instance = this;
@@ -39,6 +67,14 @@ public class GameManager : MonoBehaviour
         if (dialogueBackground != null)
         {
             dialogueBackground.SetActive(false);
+        }
+    }
+
+    private void Update()
+    {
+        if (uploadStarted)
+        {
+            UpdateUpload();
         }
     }
 
@@ -126,4 +162,119 @@ public class GameManager : MonoBehaviour
     {
         ShowDialogue("DATAPAD: They locked the doors. Why won't they open the doors?", 6f);
     }
+
+    public void CollectArisHandprint()
+    {
+        hasArisHandprint = true;
+        SetObjective("Use Dr. Aris's handprint to open the DNA-locked door.");
+        ShowDialogue("KAEL: Sorry, Doctor. I need your clearance.", 4f);
+    }
+
+    public void UseDnaDoor()
+    {
+        if (!hasArisHandprint)
+        {
+            ShowDialogue("DNA lock rejected. Dr. Aris clearance required.", 3f);
+            return;
+        }
+
+        if (dnaDoor != null)
+        {
+            dnaDoor.OpenDoor();
+        }
+
+        SetObjective("Proceed deeper into the Citadel.");
+        ShowDialogue("DNA clearance accepted. Welcome, Dr. Aris.", 4f);
+    }
+
+    public void StartMercenaryEnding()
+    {
+        ShowEnding(
+            "Ending A: Mercenary",
+            "Kael extracted the Aether Core and delivered it to the client. The credits cleared. Earth did not."
+        );
+    }
+
+    public void StartHeroPath()
+    {
+        uploadStarted = true;
+        uploadTimer = 0f;
+
+        if (uploadPanel != null)
+        {
+            uploadPanel.SetActive(true);
+        }
+
+        if (uploadSlider != null)
+        {
+            uploadSlider.value = 0f;
+        }
+
+        if (uploadPercentText != null)
+        {
+            uploadPercentText.text = "0%";
+        }
+
+        SetObjective("Survive until the Aether data upload reaches 100%.");
+        ShowDialogue("WARDEN: Theft of planetary future detected. Lethal security response authorized.", 5f);
+
+        if (finalWaveSpawner != null)
+        {
+            finalWaveSpawner.StartSpawning();
+        }
+    }
+
+    private void ShowEnding(string title, string body)
+    {
+        Time.timeScale = 0f;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        if (endingPanel != null)
+        {
+            endingPanel.SetActive(true);
+        }
+
+        if (endingTitleText != null)
+        {
+            endingTitleText.text = title;
+        }
+
+        if (endingBodyText != null)
+        {
+            endingBodyText.text = body;
+        }
+    }
+
+    private void UpdateUpload()
+    {
+        uploadTimer += Time.deltaTime;
+
+        float progress = Mathf.Clamp01(uploadTimer / uploadDuration);
+
+        if (uploadSlider != null)
+        {
+            uploadSlider.value = progress;
+        }
+
+        if (uploadPercentText != null)
+        {
+            uploadPercentText.text = Mathf.RoundToInt(progress * 100f) + "%";
+        }
+
+        if (progress >= 1f)
+        {
+            uploadStarted = false;
+            ShowHeroEnding();
+        }
+    }
+
+    private void ShowHeroEnding()
+    {
+        ShowEnding(
+            "Ending B: Hero",
+            "The Aether data reached the public network. For the first time in decades, Earth had a chance."
+        );
+    }
+
 }
