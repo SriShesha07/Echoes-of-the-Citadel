@@ -80,10 +80,21 @@ public class PlayerHealth : MonoBehaviour
 
     public void RestartLevel()
     {
-        //Time.timeScale = 1f;
-        //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-
+        // Reset all global state before reloading: timeScale was 0 on death,
+        // and cursor was unlocked for the UI. We want a clean slate so the
+        // reloaded scene's Start() methods get correct defaults.
         Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        AudioListener.pause = false;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        // GameManager is a singleton; clear it so the reloaded scene gets a fresh one.
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance = null;
+        }
+
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

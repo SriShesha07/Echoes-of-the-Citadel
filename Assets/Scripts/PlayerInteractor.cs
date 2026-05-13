@@ -11,7 +11,41 @@ public class PlayerInteractor : MonoBehaviour
     [Header("UI")]
     public TextMeshProUGUI promptText;
 
+    [Tooltip("Prompt text color. Cyan/yellow read well on most backgrounds.")]
+    public Color promptColor = new Color(1f, 0.92f, 0.25f, 1f); // bright gold
+
+    [Tooltip("Outline color behind prompt text — keeps it readable on bright/dark surfaces.")]
+    public Color promptOutlineColor = new Color(0f, 0f, 0f, 1f);
+
+    [Range(0f, 1f)]
+    public float promptOutlineWidth = 0.25f;
+
+    [Tooltip("Bold the prompt for better legibility.")]
+    public bool promptBold = true;
+
     private Interactable currentInteractable;
+
+    private void Start()
+    {
+        if (promptText != null)
+        {
+            ApplyPromptStyle();
+            promptText.text = "";
+        }
+    }
+
+    private void ApplyPromptStyle()
+    {
+        promptText.color = promptColor;
+        if (promptBold)
+        {
+            promptText.fontStyle |= FontStyles.Bold;
+        }
+        promptText.outlineColor = promptOutlineColor;
+        promptText.outlineWidth = promptOutlineWidth;
+        // Make sure the text renders on top of slight overdraw from glow.
+        promptText.enableWordWrapping = false;
+    }
 
     private void Update()
     {
@@ -25,32 +59,43 @@ public class PlayerInteractor : MonoBehaviour
 
     private void FindInteractable()
     {
-        currentInteractable = null;
+        Interactable found = null;
 
-        if (playerCamera == null)
+        if (playerCamera != null)
         {
-            ClearPrompt();
-            return;
-        }
-
-        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-
-        if (Physics.Raycast(ray, out RaycastHit hit, interactionRange, interactionMask))
-        {
-            currentInteractable = hit.collider.GetComponentInParent<Interactable>();
-
-            if (currentInteractable != null)
+            Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+            if (Physics.Raycast(ray, out RaycastHit hit, interactionRange, interactionMask))
             {
-                if (promptText != null)
-                {
-                    promptText.text = "Press E: " + currentInteractable.prompt;
-                }
-
-                return;
+                found = hit.collider.GetComponentInParent<Interactable>();
             }
         }
 
-        ClearPrompt();
+        // Highlight transitions: turn off the old one, turn on the new one.
+        if (found != currentInteractable)
+        {
+            if (currentInteractable != null)
+            {
+                currentInteractable.SetHighlight(false);
+            }
+            if (found != null)
+            {
+                found.SetHighlight(true);
+            }
+            currentInteractable = found;
+        }
+
+        if (currentInteractable != null)
+        {
+            if (promptText != null)
+            {
+                promptText.color = promptColor;
+                promptText.text = "[E] " + currentInteractable.prompt;
+            }
+        }
+        else
+        {
+            ClearPrompt();
+        }
     }
 
     private void ClearPrompt()
@@ -58,6 +103,15 @@ public class PlayerInteractor : MonoBehaviour
         if (promptText != null)
         {
             promptText.text = "";
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (currentInteractable != null)
+        {
+            currentInteractable.SetHighlight(false);
+            currentInteractable = null;
         }
     }
 }
