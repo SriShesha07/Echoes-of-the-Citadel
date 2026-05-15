@@ -7,6 +7,7 @@ public class EnemyActivationTrigger : MonoBehaviour
 
     [Header("Settings")]
     public bool triggerOnce = true;
+    public bool hideEnemiesUntilTriggered = false;
 
     [Header("Optional Dialogue")]
     [TextArea(2, 4)]
@@ -14,6 +15,22 @@ public class EnemyActivationTrigger : MonoBehaviour
     public float messageDuration = 4f;
 
     private bool hasTriggered;
+
+    private void Awake()
+    {
+        if (!hideEnemiesUntilTriggered)
+        {
+            return;
+        }
+
+        foreach (EnemyAI enemy in enemiesToActivate)
+        {
+            if (enemy != null)
+            {
+                enemy.gameObject.SetActive(false);
+            }
+        }
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -43,6 +60,7 @@ public class EnemyActivationTrigger : MonoBehaviour
         {
             if (enemy != null)
             {
+                enemy.gameObject.SetActive(true);
                 enemy.enabled = true;
 
                 EnemyAttack enemyAttack = enemy.GetComponent<EnemyAttack>();

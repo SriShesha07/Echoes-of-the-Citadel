@@ -12,10 +12,14 @@ public class GameManager : MonoBehaviour
 
     [Header("UI References")]
     public TextMeshProUGUI objectiveText;
+    public GameObject objectiveBackground;
     public TextMeshProUGUI dialogueText;
     public GameObject dialogueBackground;
+    public TextMeshProUGUI tutorialText;
+    public GameObject tutorialBackground;
 
     private Coroutine dialogueRoutine;
+    private Coroutine tutorialRoutine;
 
     [Header("Level 1 Progress")]
     public bool hasFuse;
@@ -58,6 +62,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        ApplyHudStyle();
         SetObjective("Find a working fuse to power the elevator.");
 
         if (dialogueText != null)
@@ -69,6 +74,8 @@ public class GameManager : MonoBehaviour
         {
             dialogueBackground.SetActive(false);
         }
+
+        HideTutorial();
     }
 
     private void Update()
@@ -83,7 +90,7 @@ public class GameManager : MonoBehaviour
     {
         if (objectiveText != null)
         {
-            objectiveText.text = "Objective: " + objective;
+            objectiveText.text = "MISSION // " + objective;
         }
     }
 
@@ -95,6 +102,16 @@ public class GameManager : MonoBehaviour
         }
 
         dialogueRoutine = StartCoroutine(DialogueRoutine(message, duration));
+    }
+
+    public void ShowTutorial(string message, float duration)
+    {
+        if (tutorialRoutine != null)
+        {
+            StopCoroutine(tutorialRoutine);
+        }
+
+        tutorialRoutine = StartCoroutine(TutorialRoutine(message, duration));
     }
 
     private IEnumerator DialogueRoutine(string message, float duration)
@@ -119,6 +136,38 @@ public class GameManager : MonoBehaviour
         if (dialogueBackground != null)
         {
             dialogueBackground.SetActive(false);
+        }
+    }
+
+    private IEnumerator TutorialRoutine(string message, float duration)
+    {
+        if (tutorialBackground != null)
+        {
+            tutorialBackground.SetActive(true);
+        }
+
+        if (tutorialText != null)
+        {
+            tutorialText.gameObject.SetActive(true);
+            tutorialText.text = message;
+        }
+
+        yield return new WaitForSeconds(duration);
+
+        HideTutorial();
+    }
+
+    private void HideTutorial()
+    {
+        if (tutorialText != null)
+        {
+            tutorialText.text = "";
+            tutorialText.gameObject.SetActive(false);
+        }
+
+        if (tutorialBackground != null)
+        {
+            tutorialBackground.SetActive(false);
         }
     }
 
@@ -198,6 +247,11 @@ public class GameManager : MonoBehaviour
 
     public void StartHeroPath()
     {
+        if (uploadStarted || uploadTimer > 0f)
+        {
+            return;
+        }
+
         uploadStarted = true;
         uploadTimer = 0f;
 
@@ -276,6 +330,45 @@ public class GameManager : MonoBehaviour
             "Ending B: Hero",
             "The Aether data reached the public network. For the first time in decades, Earth had a chance."
         );
+    }
+
+    private void ApplyHudStyle()
+    {
+        StyleText(objectiveText, new Color(1f, 0.84f, 0.38f, 1f), 27f, FontStyles.Bold);
+        StyleText(dialogueText, new Color(0.78f, 0.94f, 1f, 1f), 29f, FontStyles.Bold);
+        StyleText(tutorialText, new Color(0.72f, 1f, 0.92f, 1f), 27f, FontStyles.Bold);
+
+        StylePanel(objectiveBackground, new Color(0.035f, 0.07f, 0.09f, 0.82f));
+        StylePanel(dialogueBackground, new Color(0.02f, 0.045f, 0.065f, 0.88f));
+        StylePanel(tutorialBackground, new Color(0.04f, 0.09f, 0.08f, 0.88f));
+    }
+
+    private static void StyleText(TextMeshProUGUI text, Color color, float size, FontStyles style)
+    {
+        if (text == null)
+        {
+            return;
+        }
+
+        text.color = color;
+        text.fontSize = size;
+        text.fontStyle = style;
+        text.outlineColor = new Color(0f, 0f, 0f, 0.9f);
+        text.outlineWidth = 0.16f;
+    }
+
+    private static void StylePanel(GameObject panel, Color color)
+    {
+        if (panel == null)
+        {
+            return;
+        }
+
+        Image image = panel.GetComponent<Image>();
+        if (image != null)
+        {
+            image.color = color;
+        }
     }
 
     // Hookable from the ending panel button as well as any other "back to start" UI.

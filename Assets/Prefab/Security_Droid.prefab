@@ -1743,7 +1743,7 @@ GameObject:
   - component: {fileID: 6002184670195171970}
   m_Layer: 0
   m_Name: Security_Droid
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1893,6 +1893,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAI
   player: {fileID: 0}
   animator: {fileID: 4179486147614780037}
+  stoppingDistance: 5
+  retreatDistance: 3
+  retreatSpeed: 2
 --- !u!114 &6002184670195171970
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1906,10 +1909,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyAttack
   attackDamage: 10
-  attackRange: 2
+  attackRange: 8
+  minAttackRange: 1.2
   attackCooldown: 1
+  cooldownJitter: 0.4
   player: {fileID: 0}
   animator: {fileID: 0}
+  muzzle: {fileID: 0}
+  projectilePrefab: {fileID: 3874759790092907885, guid: 1ce906b3c703b0047a2915060dbbe49f, type: 3}
+  muzzleFlash: {fileID: 0}
+  gunAudio: {fileID: 0}
+  gunPrefab: {fileID: 6610773559042642176, guid: 605b83c0717659e48b6b781351930e6c, type: 3}
+  weaponParent: {fileID: 3751193413762205472}
+  gunLocalPosition: {x: -0.0149, y: -0.1037, z: -0.0149}
+  gunLocalEulerAngles: {x: 0, y: 71.334, z: -6.25}
+  gunLocalScale: {x: 1, y: 1, z: 1}
+  muzzleLocalPosition: {x: 0.013, y: -0.002, z: 0.886}
+  projectileDamage: 0
+  projectileSpeed: 0
+  lineOfSightMask:
+    serializedVersion: 2
+    m_Bits: 62
+  aimAtPlayerHeight: 1
+  maxFireSpeed: 0.35
+  aimTurnSpeed: 12
+  aimWeaponAtPlayer: 1
+  weaponAimTurnSpeed: 20
+  firingStateName: Firing Rifle
+  firingBlendTime: 0.05
+  firingLayerIndex: 1
 --- !u!1 &5219805282069850782
 GameObject:
   m_ObjectHideFlags: 0

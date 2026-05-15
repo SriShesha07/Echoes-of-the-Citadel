@@ -70,10 +70,13 @@ public class AsunaSpineController : MonoBehaviour
 
     private void Awake()
     {
-        _animator = GetComponent<Animator>();
-        if (_animator == null || !_animator.isHuman)
+        _animator = ResolveHumanoidAnimator();
+        if (_animator == null)
         {
-            Debug.LogWarning("[AsunaSpineController] Animator missing or rig is not Humanoid. Spine fix disabled.", this);
+            // No Humanoid Animator anywhere in this hierarchy. This is normal if
+            // the script ends up on a non-character object (e.g. a weapon root
+            // or an enemy with a Generic rig). Silently disable instead of
+            // spamming the console — the spine fix simply isn't applicable here.
             enabled = false;
             return;
         }
@@ -83,7 +86,7 @@ public class AsunaSpineController : MonoBehaviour
 
         if (_spineBone == null)
         {
-            Debug.LogWarning("[AsunaSpineController] Could not resolve humanoid Spine bone. Spine fix disabled.", this);
+            Debug.LogWarning("[AsunaSpineController] Humanoid rig has no Spine bone mapped in the Avatar. Spine fix disabled.", this);
             enabled = false;
             return;
         }
@@ -106,6 +109,33 @@ public class AsunaSpineController : MonoBehaviour
                 playerShooting = GetComponentInChildren<PlayerShooting>();
             }
         }
+    }
+
+    /// <summary>
+    /// Find a Humanoid Animator: prefer the one on this GameObject, otherwise
+    /// search children. Returns null if none of them are humanoid.
+    /// </summary>
+    private Animator ResolveHumanoidAnimator()
+    {
+        Animator local = GetComponent<Animator>();
+        if (local != null && local.isHuman && local.avatar != null && local.avatar.isValid)
+        {
+            return local;
+        }
+
+        // Asuna's FBX is sometimes set up as a child of the root, so the script
+        // gets attached to a parent that has only a stub Animator (or none).
+        Animator[] children = GetComponentsInChildren<Animator>(true);
+        for (int i = 0; i < children.Length; i++)
+        {
+            Animator a = children[i];
+            if (a != null && a.isHuman && a.avatar != null && a.avatar.isValid)
+            {
+                return a;
+            }
+        }
+
+        return null;
     }
 
     private void LateUpdate()
